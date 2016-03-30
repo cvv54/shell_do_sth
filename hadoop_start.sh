@@ -2,7 +2,7 @@
 
 #Please let me know ,if you find something wrong here.Thanks.
 #By Luozhihui 
-#Email:luozhihui@chinasoftinc.com or cvv54@hotmail.com
+#Email: cvv54@hotmail.com
 #version1.0  2016/03/23
 #complete the function of starting hadoop
 
@@ -18,10 +18,10 @@ function start_dfs()
 		echo "!!!!!!!!!!------------Try to start dfs '$i'th time(s)-----------"
 		/opt/hadoop-2.6.0/sbin/start-dfs.sh
 
-		jps >/home/123.txx
+		jps >/home/sh/123.txx
 
 		#"grep -w" means that exactly match
-		if [ -z "`grep -w "NameNode" /home/123.txx`" ] || [ -z "`grep -w "SecondaryNameNode" /home/123.txx`" ] || [ -z "` grep -w "Jps" /home/123.txx`" ]; then
+		if [ -z "`grep -w "NameNode" /home/sh/123.txx`" ] || [ -z "`grep -w "SecondaryNameNode" /home/sh/123.txx`" ] || [ -z "` grep -w "Jps" /home/sh/123.txx`" ]; then
         		echo -e "\e[1;31m !!!!!!!!!!-----------some process start failed----------------\e[0m"
        			/opt/hadoop-2.6.0/sbin/stop-dfs.sh
         		echo "!!!!!!!!!!-----------------restart dfs-----------------------"
@@ -49,10 +49,10 @@ function start_yarn()
                 echo "!!!!!!!!!!------------Try to start yarn '$j'th time(s)-----------"
                 /opt/hadoop-2.6.0/sbin/start-yarn.sh
 
-                jps >/home/123.txx
+                jps >/home/sh/123.txx
 
                 #"grep -w" means that exactly match
-                if [ -z "`grep -w "ResourceManager" /home/123.txx`" ] || [ -z "`grep -w "NodeManager" /home/123.txx`" ] ; then
+                if [ -z "`grep -w "ResourceManager" /home/sh/123.txx`" ] || [ -z "`grep -w "NodeManager" /home/sh/123.txx`" ] ; then
                        	echo -e "\e[1;31m !!!!!!!!!!-----------some process start failed----------------\e[0m"
                         /opt/hadoop-2.6.0/sbin/stop-yarn.sh
                         echo "!!!!!!!!!!-----------------restart yarn-----------------------"
@@ -78,13 +78,13 @@ function start_secure_dns()
 	echo "!!!!!!!!!!---------in the function start_secure_dns--------------"
         for((k=1;k<3;k++))
         {
-		jps >/home/xxx.txt
+		jps >/home/sh/xxx.txt
                 echo "!!!!!!!!!!------------Try to start secure_dns '$k'th time(s)-----------"
                 /opt/hadoop-2.6.0/sbin/start-secure-dns.sh
 
-                jps >/home/123.txx
+                jps >/home/sh/123.txx
                 #"grep -w" means that exactly match
-                if [ -z "`awk '{ print $0 }'  /home/xxx.txt /home/123.txx |sort|uniq -u`" ]; then
+                if [ -z "`awk '{ print $0 }'  /home/sh/xxx.txt /home/sh/123.txx |sort|uniq -u`" ]; then
                        	echo -e "\e[1;31m !!!!!!!!!!-----------some process start failed----------------\e[0m"
                         /opt/hadoop-2.6.0/sbin/stop-secure-dns.sh
                         echo "!!!!!!!!!!-----------------restart secure-dns-----------------------"
@@ -132,8 +132,8 @@ echo
 echo "!!!!!!!!!!!-----------finished----------"
 jps
 echo
-rm -f 123.txx
-rm -f xxx.txt
+rm -f /home/sh/123.txx
+rm -f /home/sh/xxx.txt
 echo "!!!!!!!!!!--------delete temp file--------"
 echo
 echo "!!!!!!!!!!----------over-----------------"
