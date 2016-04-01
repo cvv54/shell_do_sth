@@ -1,5 +1,6 @@
 #!/bin/bash
 
+#2016-03-31 10:11
 service mysqld status > /home/sh/temp_1
 cat /home/sh/temp_1
 if [ -z "`grep -w "running" /home/sh/temp_1`" ];then
@@ -19,7 +20,7 @@ kdestroy
 
 kdestroy
 #only gateway start Sentry
-if [ "`hostname`" = "XgX" ];then
+if [ "`hostname`" = "gateway.bdsm.cmcc" ];then
 	echo "---ready to start Sentry---"
 	/opt/apache-bdsmsentry-0.8-bin/bin/sentry --log4jConf /opt/apache-bdsmsentry-0.8-bin/conf/sentry-log4j.properties --command service --conffile /opt/apache-bdsmsentry-0.8-bin/conf/sentry-site.xml& 
 
@@ -46,7 +47,7 @@ rm -f /home/sh/temp_3
 #echo -e "\e[1;31m---sleep 30s---\e[0m"
 #sleep 30
 
-if [ "`hostname`" = "XgX" ];then
+if [ "`hostname`" = "gateway.bdsm.cmcc" ];then
 
 	echo -e "\e[1;31m---sleep 30s---\e[0m"
 	sleep 30
@@ -60,13 +61,5 @@ if [ "`hostname`" = "XgX" ];then
 	rm -f /home/sh/temp_4
 	rm -f /home/sh/temp_5
 
-
-	echo "---init Kerberos:---"
-	
-	kinit -kt /etc/.. ... 
-
-	echo "---login---"
-	
-	beeline -u XXX
+	login.sh
 fi
-
