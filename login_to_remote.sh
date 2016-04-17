@@ -11,7 +11,7 @@ send ls\n
 expect "]#"
 send ps\n
 expect "]#"
-send who\n
+send pwd>>xxx.xxx\n
 expect "]#"
 send exit\n
 expect eof
