@@ -1,0 +1,119 @@
+#!/bin/bash
+#by cvv54
+	
+	#rename existed log.txt
+#	if [ -f "/home/test/log/log.txt" ] ;then 
+#		mv /home/test/log/log.txt /home/test/log/`date "+%Y-%m-%d~%H-%M-%S"`
+#	fi
+
+	#To create log file
+	date>>/home/test/log/`date "+%Y-%m-%d~%H-%M-%S"`
+	log=`ls /home/test/log/ -rt |tail -1`
+	
+	pass=0;
+	fail=0;
+	block=0;
+
+	#To traversal files in input folder
+for i in /home/test/input/*.q 
+do
+	#To login system with user single to grant proper privileges to user test
+	#$i here is name of input file,it looks like this: /path/to/file/x-y~z.q
+	#(x:case number;y:item number;z:can be 1 or 2,means Positive testing or Negative Testing;end with .q:sql file)
+	kdestroy 
+	kinit -kt /etc/security/keytabs/single.keytab single
+	beeline -u "jdbc:hive2://gateway.xxx.xxx:10000/;principal=single" -f $i &>>/home/test/log/$log
+
+#${var%%-*}
+#该命令的作用是去掉变量var从右边算起的最后一个'-'字符及其右边的内容，返回从右边算起的最后一个'/'（不含该字符）的左边的内容。
+#${var##*/}
+#该命令的作用是去掉变量var从左边算起的最后一个'/'字符及其左边的内容，返回从左边算起的最后一个'/'（不含该字符）的右边的内容。
+
+	#To drop path,only filename left
+	j=${i##*/}
+	#only for debug
+	echo "j=$j"
+	
+	#To get last number in filename to distinguish  Positive testing from Negative Testing
+	k=${i##*~}
+	#only for debug
+	echo "k=$k"
+
+	#get case number
+	m=${j%%-*}
+	#only for debug
+	echo "m=$m"
+	
+	#To login system with user test to execute query statement
+	#filename in folder case looks like this: case_x.q(x is varable)
+	#filename in folder output will be named like output_x-y~z.q(it is not a sql file...)
+	kdestroy
+	kinit -kt /etc/security/keytabs/test.keytab test
+	beeline -u "jdbc:hive2://gateway.xxx.xxx:10000/;principal=single" -f /home/test/case/case_$m.q  &>>/home/test/output/output_$j 
+	
+	#To check results
+	#filename in folder expect looks like this: expect_x(x is varable)
+	if [ $k = "1.q" ];then
+		if [ -f "/home/test/expect/expect_$m" ];then
+			eval $(/bin/grep ok /home/test/expect/expect_$m)
+			eval $(/bin/grep nok /home/test/expect/expect_$m)
+			if [ -n "`grep -w $ok /home/test/output/output_$j`"];then
+				echo "$i pass">>/home/test/log/result.txt
+				((pass++))
+			elif [ -n "`grep -w $nok /home/test/output/output_$j`"];then
+				echo "$i failed">>/home/test/log/result.txt
+				((fail++))
+			else 
+				echo "$i block">>/home/test/log/result.txt
+				((block++))
+			fi
+		elif [ -n "`grep -w "seconds" /home/test/output/output_$j`" ];then
+			echo "$i pass">>/home/test/log/result.txt
+			((pass++))
+		elif [ -n "`grep -w "FAILED: SemanticException No valid privileges" /home/test/output/output_$j`" ];then
+			echo "$i failed">>/home/test/log/result.txt
+			((fail++))
+		else
+			echo "$i block">>/home/test/log/result.txt
+			((block++))
+		fi
+
+	else 
+		if [ -f "/home/test/expect/expect_$m" ];then
+			eval $(/bin/grep ok /home/test/expect/expect_$m)
+			eval $(/bin/grep nok /home/test/expect/expect_$m)
+			if [ -n "`grep -w $nok /home/test/output/output_$j`" ];then
+				echo "$i pass">>/home/test/log/result.txt
+				((pass++))
+			elif [ -n "`grep -w $ok /home/test/output/output_$j`" ];then
+				echo "$i failed">>/home/test/log/result.txt
+				((fail++))
+			else 
+				echo "$i block">>/home/test/log/result.txt
+				((block++))
+			fi
+		elif [ -n "`grep -w "seconds" /home/test/output/output_$j`" ];then
+			echo "$i failed">>/home/test/log/result.txt
+			((fail++))
+		elif [ -n "`grep -w "FAILED: SemanticException No valid privileges" /home/test/output/output_$j`" ];then
+			echo "$i pass">>/home/test/log/result.txt
+			((pass++))		
+		else
+			echo "$i block">>/home/test/log/result.txt
+			((block++))
+		fi
+
+	fi
+	
+
+done
+
+echo `date` >>/home/test/log/result.txt
+echo "$pass passed" >>/home/test/log/result.txt
+echo "$fail failed">>/home/test/log/result.txt
+echo "$block blocked">>/home/test/log/result.txt
+#rename log.txt with current time
+cat /home/test/log/result.txt >> /home/test/log/$log
+rm -f /home/test/log/result.txt
+
+
